@@ -237,6 +237,7 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
+        // Contract and token data
         const snowballAddress = '0xc3D9b20589B273754805246bD717d2630edaB719';
         const snowballAbi = [
             {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
@@ -328,7 +329,7 @@
         }
 
         async function initializeWeb3() {
-            console.log("initializeWeb3 called");
+            console.log("Attempting to connect wallet...");
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
                 try {
@@ -362,6 +363,7 @@
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: `0x${chainConfig.chainId.toString(16)}` }]
                 });
+                console.log("Network switched to Shibarium");
             } catch (switchError) {
                 if (switchError.code === 4902) {
                     await window.ethereum.request({
@@ -374,16 +376,16 @@
                             blockExplorerUrls: [chainConfig.blockExplorer]
                         }]
                     });
+                    console.log("Shibarium network added");
                 } else {
+                    console.error("Network switch error:", switchError);
                     throw switchError;
                 }
             }
-            console.log("Network switched to Shibarium");
-            await initializeContracts();
         }
 
         async function initializeContracts() {
-            console.log("Initializing contracts");
+            console.log("Initializing contracts...");
             snowballContract = new web3.eth.Contract(snowballAbi, snowballAddress);
             tokenContracts = tokenAddresses.map(address => new web3.eth.Contract(erc20Abi, address));
             try {
@@ -409,7 +411,7 @@
                 });
             } catch (error) {
                 document.getElementById('myBalance').innerText = 'My Balance: Error';
-                ['woofBalance', 'damnBalance', 'feedBalance', 'wowBalance', 'shipaBalance', 'luisaBalance', 'chikaBalance', 'noneBalance'].forEach(id => {
+                balanceElements.forEach(id => {
                     document.getElementById(id).innerText = 'Balance: Error';
                 });
                 console.error("Balance update error:", error);
@@ -600,23 +602,14 @@
             }
         }
 
-        // Ensure DOM is loaded before binding events
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM fully loaded, binding events");
-            const connectButton = document.getElementById('connectWalletButton');
-            if (connectButton) {
-                connectButton.addEventListener('click', () => {
-                    console.log("Connect Wallet button clicked");
-                    initializeWeb3();
-                });
-            } else {
-                console.error("Connect Wallet button not found");
-            }
-
-            document.getElementById('batchApproveButton').addEventListener('click', batchApprove);
-            document.getElementById('depositButton').addEventListener('click', depositToken);
-            document.getElementById('withdrawButton').addEventListener('click', withdrawToken);
+        // Event listeners
+        document.getElementById('connectWalletButton').addEventListener('click', () => {
+            console.log("Connect Wallet button clicked");
+            initializeWeb3();
         });
+        document.getElementById('batchApproveButton').addEventListener('click', batchApprove);
+        document.getElementById('depositButton').addEventListener('click', depositToken);
+        document.getElementById('withdrawButton').addEventListener('click', withdrawToken);
     </script>
 </body>
 </html>
