@@ -280,15 +280,9 @@
             '0x64E19b6a167878d2483d166212A3c2c68b1eB842'  // NONE
         ];
         const tokenNames = ['WOOF', 'DAMN', 'FEED', 'WOW', 'SHIPA', 'LUISA', 'CHIKA', 'NONE'];
-        const requiredAmounts = [
-            web3.utils.toWei('30', 'ether'),
-            web3.utils.toWei('6900', 'ether'),
-            web3.utils.toWei('100000000', 'ether'),
-            web3.utils.toWei('6900', 'ether'),
-            web3.utils.toWei('10000', 'ether'),
-            web3.utils.toWei('100', 'ether'),
-            web3.utils.toWei('100000000', 'ether'),
-            web3.utils.toWei('100000', 'ether')
+        // Define required amounts as raw values (without web3 dependency)
+        const requiredAmountsRaw = [
+            '30', '6900', '100000000', '6900', '10000', '100', '100000000', '100000'
         ];
         const requiredDisplay = [
             '30', '6,900', '100,000,000', '6,900', '10,000', '100', '100,000,000', '100,000'
@@ -304,6 +298,7 @@
         };
 
         let web3, account, snowballContract, tokenContracts = [];
+        let requiredAmounts = []; // Will be initialized after web3 is loaded
         let snowBalance = '0';
 
         const dogMessages = {
@@ -338,6 +333,11 @@
                     account = accounts[0];
                     console.log("Connected account:", account);
                     document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
+                    
+                    // Initialize requiredAmounts after web3 is available
+                    requiredAmounts = requiredAmountsRaw.map(amount => web3.utils.toWei(amount, 'ether'));
+                    console.log("requiredAmounts initialized:", requiredAmounts);
+
                     await switchNetwork('Shibarium');
                     await initializeContracts();
                     await updateBalances();
