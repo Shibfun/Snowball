@@ -305,36 +305,31 @@
         }
 
         async function initializeWeb3() {
-            if (!window.ethereum) {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    const accounts = await web3.eth.getAccounts();
+                    account = accounts[0];
+                    document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
+                    await switchNetwork('Shibarium');
+                    await initializeContracts();
+                    await updateBalances();
+                    document.getElementById('networkStatus').innerText = 'Connected to Shibarium';
+                    document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
+                } catch (error) {
+                    if (error.code === 4001) {
+                        document.getElementById('networkStatus').innerText = 'User denied wallet connection';
+                        document.getElementById('dogMessage').innerText = getRandomMessage('connectDenied');
+                    } else {
+                        document.getElementById('networkStatus').innerText = 'Failed to connect wallet';
+                        document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
+                        console.error("Wallet connection error:", error);
+                    }
+                }
+            } else {
                 document.getElementById('networkStatus').innerText = 'Please install MetaMask';
                 document.getElementById('dogMessage').innerText = getRandomMessage('noMetaMask');
-                return;
-            }
-            web3 = new Web3(window.ethereum);
-            try {
-                await window.ethereum.request({ method: 'eth_requestAccounts' });
-                const accounts = await web3.eth.getAccounts();
-                if (!accounts || accounts.length === 0) {
-                    document.getElementById('networkStatus').innerText = 'No accounts found';
-                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
-                    return;
-                }
-                account = accounts[0];
-                document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
-                await switchNetwork('Shibarium');
-                await initializeContracts();
-                await updateBalances();
-                document.getElementById('networkStatus').innerText = 'Connected to Shibarium';
-                document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
-            } catch (error) {
-                if (error.code === 4001) {
-                    document.getElementById('networkStatus').innerText = 'User denied wallet connection';
-                    document.getElementById('dogMessage').innerText = getRandomMessage('connectDenied');
-                } else {
-                    document.getElementById('networkStatus').innerText = 'Failed to connect wallet';
-                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
-                    console.error("Wallet connection error:", error);
-                }
             }
         }
 
