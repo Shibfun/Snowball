@@ -172,12 +172,11 @@
                 <p>Name: Snow Ball</p>
                 <p>Symbol: SNOW</p>
                 <p id="totalSupply">Total Supply: 0</p>
-                <p id="owner">Owner: Not connected</p>
+                <p id="myBalance">My Balance: 0</p>
             </div>
         </div>
         <div class="input-box">
             <label>Balances</label>
-            <div class="balance-row"><span>SNOW</span><span id="snowBalance">Balance: 0</span></div>
             <div class="balance-row"><span>WOOF</span><span id="woofBalance">Balance: 0</span></div>
             <div class="balance-row"><span>DAMN</span><span id="damnBalance">Balance: 0</span></div>
             <div class="balance-row"><span>FEED</span><span id="feedBalance">Balance: 0</span></div>
@@ -193,13 +192,13 @@
             <button class="action-button" id="batchApproveButton" onclick="batchApprove()">Batch Approve</button>
         </div>
         <div class="input-box">
-            <label>Deposit (Mint 100M SNOW per Set)</label>
-            <p>Per Set: 200 WOOF, 50K DAMN, 400M FEED, 600K WOW, 800K SHIPA, 3K LUISA, 6B CHIKA, 4M NONE</p>
+            <label>Deposit (Mint 100000000 SNOW per Set)</label>
+            <p>Per Set: 200 WOOF, 50000 DAMN, 400000000 FEED, 600000 WOW, 800000 SHIPA, 3000 LUISA, 6000000000 CHIKA, 4000000 NONE</p>
             <input type="number" id="depositSets" placeholder="Number of sets (e.g., 2)" min="1" step="1">
             <button class="action-button" id="depositButton" onclick="depositToken()">Deposit</button>
         </div>
         <div class="input-box">
-            <label>Withdraw (Burn 100M SNOW per Set)</label>
+            <label>Withdraw (Burn 100000000 SNOW per Set)</label>
             <input type="number" id="withdrawAmount" placeholder="100000000" min="100000000" step="100000000">
             <div class="percentage-buttons">
                 <button onclick="setPercentage(25)">25%</button>
@@ -284,6 +283,8 @@
         const dogMessages = {
             connectSuccess: ["Woof! Wallet connected, ready to mint or burn, pup!", "Arf! You're in, let's roll some SNOW!", "Bark! Wallet's ready, time to play!"],
             connectFail: ["Woof! Couldn't connect wallet, try again, pup!", "Arf! Wallet connection failed, give it another go!", "Bark! Something went wrong, check your wallet!"],
+            connectDenied: ["Woof! You denied the connection, pup!", "Arf! Connection rejected, try again!", "Bark! Wallet access denied, let's retry!"],
+            noMetaMask: ["Woof! MetaMask not found, install it, pup!", "Arf! No MetaMask detected, get it ready!", "Bark! Need MetaMask to proceed!"],
             approveStart: ["Woof! Approving tokens, hold tight, pup!", "Arf! Setting up token approvals now!", "Bark! Approval in progress!"],
             approveSuccess: ["Woof! Tokens approved, ready to deposit, pup!", "Arf! All tokens approved, let's mint!", "Bark! Success! Tokens ready!"],
             approveFail: ["Woof! Approval failed, check details, pup!", "Arf! Something went wrong, try again!", "Bark! Approval hit a snag, retry!"],
@@ -293,7 +294,7 @@
             withdrawStart: ["Woof! Burning your SNOW, hold tight, pup!", "Arf! Unrolling your snowball now!", "Bark! Withdrawal in progress!"],
             withdrawSuccess: ["Woof! SNOW burned, tokens returned, pup!", "Arf! Your tokens are back!", "Bark! Success! Withdrawal complete!"],
             withdrawFail: ["Woof! Withdrawal failed, check balance, pup!", "Arf! Something went wrong, try again!", "Bark! Withdrawal hit a snag, retry!"],
-            noAmount: ["Woof! Enter a valid amount (multiple of 100M), pup!", "Arf! Can't process that, pick a valid amount!", "Bark! Need a multiple of 100M to proceed!"],
+            noAmount: ["Woof! Enter a valid amount (multiple of 100000000), pup!", "Arf! Can't process that, pick a valid amount!", "Bark! Need a multiple of 100000000 to proceed!"],
             noSets: ["Woof! Enter a valid number of sets (1 or more), pup!", "Arf! Can't deposit nothing, pick a number!", "Bark! Need a set count to proceed!"],
             userDenied: ["Woof! You canceled the transaction, pup!", "Arf! Transaction denied, try again when ready!", "Bark! You said no, let's try that again!"]
         };
@@ -304,26 +305,36 @@
         }
 
         async function initializeWeb3() {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                try {
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    const accounts = await web3.eth.getAccounts();
-                    account = accounts[0];
-                    document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
-                    await switchNetwork('Shibarium');
-                    await initializeContracts();
-                    await updateBalances();
-                    document.getElementById('networkStatus').innerText = 'Connected to Shibarium';
-                    document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
-                } catch (error) {
+            if (!window.ethereum) {
+                document.getElementById('networkStatus').innerText = 'Please install MetaMask';
+                document.getElementById('dogMessage').innerText = getRandomMessage('noMetaMask');
+                return;
+            }
+            web3 = new Web3(window.ethereum);
+            try {
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                const accounts = await web3.eth.getAccounts();
+                if (!accounts || accounts.length === 0) {
+                    document.getElementById('networkStatus').innerText = 'No accounts found';
+                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
+                    return;
+                }
+                account = accounts[0];
+                document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
+                await switchNetwork('Shibarium');
+                await initializeContracts();
+                await updateBalances();
+                document.getElementById('networkStatus').innerText = 'Connected to Shibarium';
+                document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
+            } catch (error) {
+                if (error.code === 4001) {
+                    document.getElementById('networkStatus').innerText = 'User denied wallet connection';
+                    document.getElementById('dogMessage').innerText = getRandomMessage('connectDenied');
+                } else {
                     document.getElementById('networkStatus').innerText = 'Failed to connect wallet';
                     document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
                     console.error("Wallet connection error:", error);
                 }
-            } else {
-                document.getElementById('networkStatus').innerText = 'Please install MetaMask';
-                document.getElementById('dogMessage').innerText = 'Woof! MetaMask not found, pup!';
             }
         }
 
@@ -347,21 +358,18 @@
                         }]
                     });
                 } else {
+                    document.getElementById('networkStatus').innerText = 'Failed to switch network';
+                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
                     throw switchError;
                 }
             }
-            await initializeContracts();
         }
 
         async function initializeContracts() {
             snowballContract = new web3.eth.Contract(snowballAbi, snowballAddress);
             tokenContracts = tokenAddresses.map(address => new web3.eth.Contract(erc20Abi, address));
-            const [totalSupply, owner] = await Promise.all([
-                snowballContract.methods.totalSupply().call(),
-                snowballContract.methods.owner().call()
-            ]);
-            document.getElementById('totalSupply').innerText = `Total Supply: ${parseFloat(web3.utils.fromWei(totalSupply, 'ether')).toFixed(4)}`;
-            document.getElementById('owner').innerText = `Owner: ${owner}`;
+            const totalSupply = await snowballContract.methods.totalSupply().call();
+            document.getElementById('totalSupply').innerText = `Total Supply: ${parseInt(web3.utils.fromWei(totalSupply, 'ether'))}`;
         }
 
         async function updateBalances() {
@@ -369,15 +377,15 @@
             try {
                 const snowBalanceRaw = await snowballContract.methods.balanceOf(account).call();
                 snowBalance = web3.utils.fromWei(snowBalanceRaw, 'ether');
-                document.getElementById('snowBalance').innerText = `Balance: ${parseFloat(snowBalance).toFixed(4)}`;
+                document.getElementById('myBalance').innerText = `My Balance: ${parseInt(snowBalance)}`;
                 const balances = await Promise.all(tokenContracts.map(contract => contract.methods.balanceOf(account).call()));
                 const balanceElements = ['woofBalance', 'damnBalance', 'feedBalance', 'wowBalance', 'shipaBalance', 'luisaBalance', 'chikaBalance', 'noneBalance'];
                 balances.forEach((balance, i) => {
-                    document.getElementById(balanceElements[i]).innerText = `Balance: ${parseFloat(web3.utils.fromWei(balance, 'ether')).toFixed(4)}`;
+                    document.getElementById(balanceElements[i]).innerText = `Balance: ${parseInt(web3.utils.fromWei(balance, 'ether'))}`;
                 });
             } catch (error) {
                 console.error("Balance update error:", error);
-                document.getElementById('snowBalance').innerText = 'Balance: Error';
+                document.getElementById('myBalance').innerText = 'My Balance: Error';
                 ['woofBalance', 'damnBalance', 'feedBalance', 'wowBalance', 'shipaBalance', 'luisaBalance', 'chikaBalance', 'noneBalance'].forEach(id => {
                     document.getElementById(id).innerText = 'Balance: Error';
                 });
@@ -387,7 +395,7 @@
         async function setPercentage(percentage) {
             if (!snowBalance) return;
             const amount = (parseFloat(snowBalance) * percentage) / 100;
-            const sets = Math.floor(amount / 100_000_000) * 100_000_000;
+            const sets = Math.floor(amount / 100000000) * 100000000;
             document.getElementById('withdrawAmount').value = sets;
         }
 
@@ -478,7 +486,7 @@
                     }
                 }
 
-                status.innerText = `Minting ${sets * 100}M SNOW...`;
+                status.innerText = `Minting ${sets * 100000000} SNOW...`;
                 for (let i = 0; i < sets; i++) {
                     const tx = await snowballContract.methods.deposit().send({
                         from: account,
@@ -517,8 +525,8 @@
             }
 
             const amount = parseFloat(document.getElementById('withdrawAmount').value);
-            if (!amount || amount <= 0 || amount % 100_000_000 !== 0) {
-                status.innerText = "Please enter a valid amount (multiple of 100M).";
+            if (!amount || amount <= 0 || amount % 100000000 !== 0) {
+                status.innerText = "Please enter a valid amount (multiple of 100000000).";
                 dogMessage.innerText = getRandomMessage('noAmount');
                 return;
             }
@@ -536,7 +544,7 @@
                     return;
                 }
 
-                status.innerText = `Burning ${amount}M SNOW...`;
+                status.innerText = `Burning ${amount} SNOW...`;
                 const tx = await snowballContract.methods.withdraw(amountWei).send({
                     from: account,
                     gas: web3.utils.toHex(300000)
