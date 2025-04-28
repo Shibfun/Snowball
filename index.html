@@ -207,15 +207,15 @@
             <div class="balance-row"><span>NONE</span><span id="noneBalance">Balance: 0</span></div>
         </div>
         <div class="input-box">
-            <label>Batch Approve</label>
+            <label>Approve Tokens</label>
             <p>Approve all 8 tokens for deposit</p>
-            <button class="action-button" id="batchApproveButton">Batch Approve</button>
+            <button class="action-button" id="approveTokensButton">Approve Tokens</button>
         </div>
         <div class="input-box">
             <label>Deposit (Mint 100M SNOW per Set)</label>
             <div class="requirements">
                 <p>Per Set: 30 WOOF, 6,900 DAMN, 100M FEED, 6,900 WOW, 10,000 SHIPA, 100 LUISA, 100M CHIKA, 100K NONE</p>
-                <p id="maxSets">Max Sets: 0</p> <!-- Added to display max sets -->
+                <p id="maxSets">Max Sets: 0</p>
             </div>
             <input type="number" id="depositSets" placeholder="Number of sets (e.g., 2)" min="1" step="1">
             <button class="action-button" id="depositButton">Deposit</button>
@@ -238,28 +238,27 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
-        // Contract and token data
-        const snowballAddress = '0xc3D9b20589B273754805246bD717d2630edaB719';
+        const snowballAddress = '0x2778f7E40D90DB18203Ec31C9c5F84fde6cf6763';
         const snowballAbi = [
             {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},
-            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"address[]","name":"tokens","type":"address[]"}],"name":"BatchApprove","type":"event"},
-            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"outputAmount","type":"uint256"}],"name":"Deposit","type":"event"},
+            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"sets","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"outputAmount","type":"uint256"}],"name":"Deposit","type":"event"},
+            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"token","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"bool","name":"success","type":"bool"}],"name":"TokenTransferAttempt","type":"event"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
-            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"outputAmount","type":"uint256"}],"name":"Withdraw","type":"event"},
+            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"sets","type":"uint256"},{"indexed":false,"internalType":"uint256","name":"outputAmount","type":"uint256"}],"name":"Withdraw","type":"event"},
             {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"address","name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-            {"inputs":[],"name":"batchApprove","outputs":[],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[],"name":"deposit","outputs":[],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"uint256","name":"sets","type":"uint256"}],"name":"deposit","outputs":[],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"inputAmounts","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"inputTokens","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},
             {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
             {"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},
             {"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
+            {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"tokenNames","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
             {"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"address","name":"from","type":"address"},{"internalType":"address","name":"to","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
@@ -271,17 +270,16 @@
             {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"type":"function"}
         ];
         const tokenAddresses = [
-            '0xD0daa7B6ff1B40d3cc6F0B2Cf7E85cB993D1c834', // WOOF
-            '0xeCe898EdCc0AF91430603175F945D8de75291c70', // DAMN
-            '0xe9Cb2D7ADC24Fc59FE00D6C0A0669BDF16805Fe0', // FEED
-            '0x8f4b11d923BbAA6206f3Dd3ff84e8e31bafB49b7', // WOW
-            '0x632d1FF1fB27d88EDeDB90e70bFC094D7932A0ad', // SHIPA
-            '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9', // LUISA
-            '0x61CFA29261d8151D39244b8FfCf8DFd2f9DF3839', // CHIKA
-            '0x64E19b6a167878d2483d166212A3c2c68b1eB842'  // NONE
+            '0xD0daa7B6ff1B40d3cc6F0B2Cf7E85cB993D1c834',
+            '0xeCe898EdCc0AF91430603175F945D8de75291c70',
+            '0xe9Cb2D7ADC24Fc59FE00D6C0A0669BDF16805Fe0',
+            '0x8f4b11d923BbAA6206f3Dd3ff84e8e31bafB49b7',
+            '0x632d1FF1fB27d88EDeDB90e70bFC094D7932A0ad',
+            '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9',
+            '0x61CFA29261d8151D39244b8FfCf8DFd2f9DF3839',
+            '0x64E19b6a167878d2483d166212A3c2c68b1eB842'
         ];
         const tokenNames = ['WOOF', 'DAMN', 'FEED', 'WOW', 'SHIPA', 'LUISA', 'CHIKA', 'NONE'];
-        // Define required amounts as raw values (without web3 dependency)
         const requiredAmountsRaw = [
             '30', '6900', '100000000', '6900', '10000', '100', '100000000', '100000'
         ];
@@ -299,7 +297,7 @@
         };
 
         let web3, account, snowballContract, tokenContracts = [];
-        let requiredAmounts = []; // Will be initialized after web3 is loaded
+        let requiredAmounts = [];
         let snowBalance = '0';
 
         const dogMessages = {
@@ -335,7 +333,6 @@
                     console.log("Connected account:", account);
                     document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
                     
-                    // Initialize requiredAmounts after web3 is available
                     requiredAmounts = requiredAmountsRaw.map(amount => web3.utils.toWei(amount, 'ether'));
                     console.log("requiredAmounts initialized:", requiredAmounts);
 
@@ -411,11 +408,10 @@
                     document.getElementById(balanceElements[i]).innerText = `Balance: ${Number(web3.utils.fromWei(balance, 'ether')).toLocaleString()}`;
                 });
 
-                // Calculate maximum sets based on balances
                 const maxSets = balances.map((balance, i) => {
                     const required = web3.utils.toBN(requiredAmounts[i]);
                     const balanceBN = web3.utils.toBN(balance);
-                    if (required.isZero()) return Infinity; // Avoid division by zero
+                    if (required.isZero()) return Infinity;
                     return Math.floor(Number(balanceBN.div(required)));
                 });
                 const maxPossibleSets = Math.min(...maxSets);
@@ -423,6 +419,7 @@
                 console.log("Max possible sets:", maxPossibleSets);
             } catch (error) {
                 document.getElementById('myBalance').innerText = 'My Balance: Error';
+                const balanceElements = ['woofBalance', 'damnBalance', 'feedBalance', 'wowBalance', 'shipaBalance', 'luisaBalance', 'chikaBalance', 'noneBalance'];
                 balanceElements.forEach(id => {
                     document.getElementById(id).innerText = 'Balance: Error';
                 });
@@ -455,9 +452,9 @@
             throw new Error(`Transaction ${txHash} not confirmed after ${maxAttempts} attempts`);
         }
 
-        async function batchApprove() {
+        async function approveTokens() {
             const status = document.getElementById('networkStatus');
-            const batchApproveButton = document.getElementById('batchApproveButton');
+            const approveButton = document.getElementById('approveTokensButton');
             const dogMessage = document.getElementById('dogMessage');
 
             if (!web3 || !account) {
@@ -467,17 +464,24 @@
             }
 
             try {
-                batchApproveButton.disabled = true;
-                batchApproveButton.innerHTML = 'Approving... <span class="spinner"></span>';
+                approveButton.disabled = true;
+                approveButton.innerHTML = 'Approving... <span class="spinner"></span>';
                 status.innerText = "Approving tokens...";
                 dogMessage.innerText = getRandomMessage('approveStart');
 
-                const tx = await snowballContract.methods.batchApprove().send({
-                    from: account,
-                    gas: web3.utils.toHex(500000)
-                });
+                const maxUint256 = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
+                for (let i = 0; i < tokenContracts.length; i++) {
+                    status.innerText = `Approving ${tokenNames[i]}...`;
+                    const allowance = await tokenContracts[i].methods.allowance(account, snowballAddress).call();
+                    if (web3.utils.toBN(allowance).lt(web3.utils.toBN(maxUint256))) {
+                        const tx = await tokenContracts[i].methods.approve(snowballAddress, maxUint256).send({
+                            from: account,
+                            gas: web3.utils.toHex(100000)
+                        });
+                        await waitForTransaction(tx.transactionHash);
+                    }
+                }
 
-                await waitForTransaction(tx.transactionHash);
                 status.innerText = "All tokens approved!";
                 dogMessage.innerText = getRandomMessage('approveSuccess');
             } catch (error) {
@@ -490,8 +494,8 @@
                     console.error("Approval error:", error);
                 }
             } finally {
-                batchApproveButton.disabled = false;
-                batchApproveButton.innerHTML = 'Batch Approve';
+                approveButton.disabled = false;
+                approveButton.innerHTML = 'Approve Tokens';
             }
         }
 
@@ -516,7 +520,7 @@
             try {
                 depositButton.disabled = true;
                 depositButton.innerHTML = 'Minting... <span class="spinner"></span>';
-                status.innerText = "Checking balances...";
+                status.innerText = "Checking balances and allowances...";
                 dogMessage.innerText = getRandomMessage('depositStart');
 
                 const balances = await Promise.all(tokenContracts.map(contract => contract.methods.balanceOf(account).call()));
@@ -529,14 +533,22 @@
                     }
                 }
 
-                status.innerText = `Minting ${sets * 100000000} SNOW...`;
-                for (let i = 0; i < sets; i++) {
-                    const tx = await snowballContract.methods.deposit().send({
-                        from: account,
-                        gas: web3.utils.toHex(300000)
-                    });
-                    await waitForTransaction(tx.transactionHash);
+                const allowances = await Promise.all(tokenContracts.map(contract => contract.methods.allowance(account, snowballAddress).call()));
+                for (let i = 0; i < allowances.length; i++) {
+                    const required = web3.utils.toBN(requiredAmounts[i]).mul(web3.utils.toBN(sets));
+                    if (web3.utils.toBN(allowances[i]).lt(required)) {
+                        status.innerText = `Insufficient ${tokenNames[i]} allowance for ${sets} sets. Please approve tokens first.`;
+                        dogMessage.innerText = `Woof! ${tokenNames[i]} needs approval for ${sets} sets, pup!`;
+                        return;
+                    }
                 }
+
+                status.innerText = `Minting ${sets * 100000000} SNOW...`;
+                const tx = await snowballContract.methods.deposit(sets).send({
+                    from: account,
+                    gas: web3.utils.toHex(800000)
+                });
+                await waitForTransaction(tx.transactionHash);
 
                 status.innerText = `Deposited ${sets} sets successfully!`;
                 dogMessage.innerText = getRandomMessage('depositSuccess');
@@ -592,7 +604,7 @@
                 status.innerText = `Burning ${amount} SNOW...`;
                 const tx = await snowballContract.methods.withdraw(amountWei).send({
                     from: account,
-                    gas: web3.utils.toHex(300000)
+                    gas: web3.utils.toHex(800000)
                 });
 
                 await waitForTransaction(tx.transactionHash);
@@ -615,12 +627,8 @@
             }
         }
 
-        // Event listeners
-        document.getElementById('connectWalletButton').addEventListener('click', () => {
-            console.log("Connect Wallet button clicked");
-            initializeWeb3();
-        });
-        document.getElementById('batchApproveButton').addEventListener('click', batchApprove);
+        document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
+        document.getElementById('approveTokensButton').addEventListener('click', approveTokens);
         document.getElementById('depositButton').addEventListener('click', depositToken);
         document.getElementById('withdrawButton').addEventListener('click', withdrawToken);
     </script>
