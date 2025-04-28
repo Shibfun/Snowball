@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snowball Whitepaper</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
+            color: #ffffff;
+            padding: 40px;
+            margin: 0;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #2c2f48;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            color: #ff9100;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.8em;
+            color: #ff6f61;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        p {
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .highlight {
+            background: #373b5c;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .contract-address {
+            font-family: monospace;
+            color: #ff9100;
+            word-break: break-all;
+        }
+        .roadmap {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .roadmap-item {
+            background: #373b5c;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .roadmap-item h3 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #ff9100;
+        }
+        .roadmap-item p {
+            margin: 5px 0 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #aaaaaa;
+        }
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            h2 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Snowball Whitepaper</h1>
+        <div class="section">
+            <h2>1. Introduction</h2>
+            <p>
+                Snowball is a decentralized finance (DeFi) protocol built on the Shibarium blockchain, designed to facilitate the creation and redemption of SNOW tokens through a unique multi-token deposit mechanism. By leveraging the power of smart contracts, Snowball enables users to mint SNOW tokens by depositing a basket of predefined tokens and redeem their deposits by burning SNOW tokens, fostering a seamless and efficient token ecosystem.
+            </p>
+            <p>
+                The protocol aims to provide a novel way for users to aggregate value from multiple tokens into a single asset (SNOW), which can be used for various DeFi applications, trading, or holding as a store of value.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>2. Tokenomics</h2>
+            <div class="highlight">
+                <p><strong>Name:</strong> Snow Ball</p>
+                <p><strong>Symbol:</strong> SNOW</p>
+                <p><strong>Decimals:</strong> 18</p>
+                <p><strong>Maximum Supply:</strong> 500 Trillion SNOW (500,000,000,000,000 SNOW)</p>
+            </div>
+            <p>
+                SNOW tokens are minted when users deposit a specific combination of 8 tokens in predefined amounts. The minting process generates 100 million SNOW per set of tokens deposited. Conversely, burning SNOW tokens allows users to redeem the underlying tokens in the same proportion.
+            </p>
+            <p>
+                The token supply is capped at 500 trillion SNOW, ensuring scarcity and preventing inflation beyond this limit. The total supply increases with each deposit and decreases with each withdrawal, maintaining a dynamic balance driven by user activity.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>3. Core Mechanism</h2>
+            <h3>3.1 Deposit (Minting SNOW)</h3>
+            <p>
+                Users can mint SNOW tokens by depositing a set of 8 tokens in the following amounts per set:
+            </p>
+            <ul>
+                <li>30 WOOF</li>
+                <li>6,900 DAMN</li>
+                <li>100,000,000 FEED</li>
+                <li>6,900 WOW</li>
+                <li>10,000 SHIPA</li>
+                <li>100 LUISA</li>
+                <li>100,000,000 CHIKA</li>
+                <li>100,000 NONE</li>
+            </ul>
+            <p>
+                Each set deposited mints 100 million SNOW tokens. Users can deposit multiple sets in a single transaction, making the process efficient. The smart contract enforces strict checks on balances and allowances to ensure the integrity of the minting process.
+            </p>
+
+            <h3>3.2 Withdraw (Burning SNOW)</h3>
+            <p>
+                Users can burn SNOW tokens to redeem the underlying tokens. The amount of SNOW burned must be a multiple of 100 million (corresponding to one set). For each set burned, the user receives the exact amounts of the 8 tokens listed above. The contract ensures that the burned SNOW corresponds to the user's balance and that the contract has sufficient tokens to return.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>4. Technical Details</h2>
+            <p>
+                The Snowball smart contract is deployed on the Shibarium blockchain, a layer-2 solution for Ethereum, offering low-cost and high-speed transactions. The contract address is:
+            </p>
+            <p class="contract-address">
+                0x2778f7E40D90DB18203Ec31C9c5F84fde6cf6763
+            </p>
+            <p>
+                The contract is written in Solidity (version ^0.8.0) and adheres to the ERC20 standard for the SNOW token, with additional functionality for multi-token deposits and withdrawals. Key features include:
+            </p>
+            <ul>
+                <li><strong>Deposit Function:</strong> Allows users to deposit multiple sets of tokens in a single transaction, minting SNOW tokens proportionally.</li>
+                <li><strong>Withdraw Function:</strong> Enables users to burn SNOW tokens and redeem the underlying tokens.</li>
+                <li><strong>Balance and Allowance Checks:</strong> Ensures users have sufficient tokens and have approved the contract to transfer them.</li>
+                <li><strong>Event Logging:</strong> Emits events for deposits, withdrawals, and token transfers for transparency and debugging.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>5. Use Cases</h2>
+            <ul>
+                <li><strong>Token Aggregation:</strong> Users can consolidate the value of multiple tokens into a single SNOW token, simplifying portfolio management.</li>
+                <li><strong>DeFi Integration:</strong> SNOW tokens can be used in other DeFi protocols for lending, borrowing, or liquidity provision.</li>
+                <li><strong>Speculative Trading:</strong> Traders can speculate on the combined value of the underlying tokens by holding or trading SNOW.</li>
+                <li><strong>Community Incentives:</strong> Projects can use SNOW as a reward token, backed by a basket of community-supported tokens.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>6. Roadmap</h2>
+            <div class="roadmap">
+                <div class="roadmap-item">
+                    <h3>Q2 2025 - Launch</h3>
+                    <p>Deploy the Snowball smart contract on Shibarium and launch the initial version of the dApp for token minting and burning.</p>
+                </div>
+                <div class="roadmap-item">
+                    <h3>Q3 2025 - Community Engagement</h3>
+                    <p>Partner with Shibarium ecosystem projects to integrate SNOW tokens into their platforms and build a community of users.</p>
+                </div>
+                <div class="roadmap-item">
+                    <h3>Q4 2025 - Feature Expansion</h3>
+                    <p>Introduce staking mechanisms for SNOW holders and explore cross-chain compatibility with other layer-2 solutions.</p>
+                </div>
+                <div class="roadmap-item">
+                    <h3>Q1 2026 - Governance</h3>
+                    <p>Implement a decentralized governance model, allowing SNOW holders to vote on protocol upgrades and token basket adjustments.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>7. Risks and Mitigations</h2>
+            <ul>
+                <li><strong>External Token Risks:</strong> The protocol relies on external tokens, which may be subject to pauses or restrictions. Mitigation: Thoroughly vet all tokens included in the basket.</li>
+                <li><strong>Smart Contract Risk:</strong> Bugs in the contract could lead to loss of funds. Mitigation: The contract has been audited internally, and external audits are planned post-launch.</li>
+                <li><strong>Market Volatility:</strong> The value of SNOW is tied to the underlying tokens, which may fluctuate. Mitigation: Users are encouraged to assess the market before minting or burning SNOW.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>8. Conclusion</h2>
+            <p>
+                Snowball introduces an innovative approach to token aggregation on the Shibarium blockchain, enabling users to mint and burn SNOW tokens with a basket of 8 underlying tokens. With a capped supply, secure smart contract, and a vision for DeFi integration, Snowball aims to become a key player in the Shibarium ecosystem. Join us in rolling the snowball of decentralized finance!
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 Snowball Protocol. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
