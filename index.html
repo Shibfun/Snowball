@@ -305,50 +305,37 @@
         }
 
         async function initializeWeb3() {
-            console.log("initializeWeb3 called");
             if (window.ethereum) {
-                console.log("MetaMask detected");
                 web3 = new Web3(window.ethereum);
                 try {
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    console.log("Accounts requested");
                     const accounts = await web3.eth.getAccounts();
                     account = accounts[0];
-                    console.log("Account:", account);
                     document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
                     await switchNetwork('Shibarium');
                     await initializeContracts();
                     await updateBalances();
-                    document.getElementById('networkStatus').innerText = 'Connected to Shibarium';
+                    document.getElementById('networkStatus').innerText = `Connected to Shibarium`;
                     document.getElementById('dogMessage').innerText = getRandomMessage('connectSuccess');
                 } catch (error) {
+                    document.getElementById('networkStatus').innerText = 'Failed to connect wallet';
+                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
                     console.error("Wallet connection error:", error);
-                    if (error.code === 4001) {
-                        document.getElementById('networkStatus').innerText = 'User denied wallet connection';
-                        document.getElementById('dogMessage').innerText = getRandomMessage('connectDenied');
-                    } else {
-                        document.getElementById('networkStatus').innerText = 'Failed to connect wallet';
-                        document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
-                    }
                 }
             } else {
-                console.log("MetaMask not found");
                 document.getElementById('networkStatus').innerText = 'Please install MetaMask';
-                document.getElementById('dogMessage').innerText = getRandomMessage('noMetaMask');
+                document.getElementById('dogMessage').innerText = 'Woof! MetaMask not found, pup!';
             }
         }
 
         async function switchNetwork(chain) {
-            console.log("switchNetwork called for:", chain);
             const chainConfig = chains[chain];
             try {
                 await window.ethereum.request({
                     method: 'wallet_switchEthereumChain',
                     params: [{ chainId: `0x${chainConfig.chainId.toString(16)}` }]
                 });
-                console.log("Network switched to Shibarium");
             } catch (switchError) {
-                console.error("Switch network error:", switchError);
                 if (switchError.code === 4902) {
                     await window.ethereum.request({
                         method: 'wallet_addEthereumChain',
@@ -360,17 +347,14 @@
                             blockExplorerUrls: ['https://shibariumscan.io']
                         }]
                     });
-                    console.log("Shibarium network added");
                 } else {
-                    document.getElementById('networkStatus').innerText = 'Failed to switch network';
-                    document.getElementById('dogMessage').innerText = getRandomMessage('connectFail');
                     throw switchError;
                 }
             }
+            await initializeContracts();
         }
 
         async function initializeContracts() {
-            console.log("initializeContracts called");
             snowballContract = new web3.eth.Contract(snowballAbi, snowballAddress);
             tokenContracts = tokenAddresses.map(address => new web3.eth.Contract(erc20Abi, address));
             const totalSupply = await snowballContract.methods.totalSupply().call();
@@ -386,7 +370,7 @@
                 const balances = await Promise.all(tokenContracts.map(contract => contract.methods.balanceOf(account).call()));
                 const balanceElements = ['woofBalance', 'damnBalance', 'feedBalance', 'wowBalance', 'shipaBalance', 'luisaBalance', 'chikaBalance', 'noneBalance'];
                 balances.forEach((balance, i) => {
-                    document.getElementById(balanceElements[i]).innerText = `Balance: ${parseInt(web3.utils.fromWei(balances[i], 'ether'))}`;
+                    document.getElementById(balanceElements[i]).innerText = `Balance: ${parseInt(web3.utils.fromWei(balance, 'ether'))}`;
                 });
             } catch (error) {
                 console.error("Balance update error:", error);
