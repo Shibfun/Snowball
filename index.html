@@ -243,7 +243,7 @@
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"address[]","name":"tokens","type":"address[]"}],"name":"BatchApprove","type":"event"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"outputAmount","type":"uint256"}],"name":"Deposit","type":"event"},
-            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address  [{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
+            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"outputAmount","type":"uint256"}],"name":"Withdraw","type":"event"},
             {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
@@ -252,7 +252,7 @@
             {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[],"name":"deposit","outputs":[],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256-purple-600">increaseAllowance(address spender, uint256 addedValue) external returns (bool);
+            {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"inputAmounts","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"inputTokens","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},
             {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
@@ -328,12 +328,14 @@
         }
 
         async function initializeWeb3() {
+            console.log("initializeWeb3 called");
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
                 try {
                     await window.ethereum.request({ method: 'eth_requestAccounts' });
                     const accounts = await web3.eth.getAccounts();
                     account = accounts[0];
+                    console.log("Connected account:", account);
                     document.getElementById('connectWalletButton').innerText = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
                     await switchNetwork('Shibarium');
                     await initializeContracts();
@@ -348,10 +350,12 @@
             } else {
                 document.getElementById('networkStatus').innerText = 'Please install MetaMask';
                 document.getElementById('dogMessage').innerText = 'Woof! MetaMask not found, pup!';
+                console.error("MetaMask not detected");
             }
         }
 
         async function switchNetwork(chain) {
+            console.log("Switching to network:", chain);
             const chainConfig = chains[chain];
             try {
                 await window.ethereum.request({
@@ -374,10 +378,12 @@
                     throw switchError;
                 }
             }
+            console.log("Network switched to Shibarium");
             await initializeContracts();
         }
 
         async function initializeContracts() {
+            console.log("Initializing contracts");
             snowballContract = new web3.eth.Contract(snowballAbi, snowballAddress);
             tokenContracts = tokenAddresses.map(address => new web3.eth.Contract(erc20Abi, address));
             try {
@@ -391,6 +397,7 @@
 
         async function updateBalances() {
             if (!web3 || !account) return;
+            console.log("Updating balances for account:", account);
             try {
                 const snowBalanceRaw = await snowballContract.methods.balanceOf(account).call();
                 snowBalance = web3.utils.fromWei(snowBalanceRaw, 'ether');
@@ -417,6 +424,7 @@
         }
 
         async function waitForTransaction(txHash) {
+            console.log("Waiting for transaction:", txHash);
             let receipt = null;
             const maxAttempts = 30;
             let attempts = 0;
@@ -592,10 +600,23 @@
             }
         }
 
-        document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
-        document.getElementById('batchApproveButton').addEventListener('click', batchApprove);
-        document.getElementById('depositButton').addEventListener('click', depositToken);
-        document.getElementById('withdrawButton').addEventListener('click', withdrawToken);
+        // Ensure DOM is loaded before binding events
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM fully loaded, binding events");
+            const connectButton = document.getElementById('connectWalletButton');
+            if (connectButton) {
+                connectButton.addEventListener('click', () => {
+                    console.log("Connect Wallet button clicked");
+                    initializeWeb3();
+                });
+            } else {
+                console.error("Connect Wallet button not found");
+            }
+
+            document.getElementById('batchApproveButton').addEventListener('click', batchApprove);
+            document.getElementById('depositButton').addEventListener('click', depositToken);
+            document.getElementById('withdrawButton').addEventListener('click', withdrawToken);
+        });
     </script>
 </body>
 </html>
