@@ -37,7 +37,6 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             border-radius: var(--border-radius);
             padding: 20px;
-            position: relative;
         }
         .header {
             background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
@@ -115,6 +114,7 @@
             width: 100%;
             transition: background 0.2s;
             margin-bottom: 10px;
+            position: relative;
         }
         .action-button:disabled {
             background: #4a4f7a;
@@ -127,13 +127,13 @@
             color: var(--primary-color);
             text-align: center;
         }
-        .token-info {
+        .token-info, .requirements {
             background: var(--input-bg);
             padding: 15px;
             border-radius: var(--border-radius);
             margin-bottom: 15px;
         }
-        .token-info p {
+        .token-info p, .requirements p {
             font-size: 0.9em;
             margin-bottom: 5px;
         }
@@ -150,6 +150,24 @@
             font-size: 0.9em;
             color: var(--secondary-color);
             font-style: italic;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 5px;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         @media (max-width: 480px) {
             body { padding: 10px; }
@@ -191,24 +209,26 @@
         <div class="input-box">
             <label>Batch Approve</label>
             <p>Approve all 8 tokens for deposit</p>
-            <button class="action-button" id="batchApproveButton" onclick="batchApprove()">Batch Approve</button>
+            <button class="action-button" id="batchApproveButton">Batch Approve</button>
         </div>
         <div class="input-box">
-            <label>Deposit (Mint 100000000 SNOW per Set)</label>
-            <p>Per Set: 200 WOOF, 50000 DAMN, 400000000 FEED, 600000 WOW, 800000 SHIPA, 3000 LUISA, 6000000000 CHIKA, 4000000 NONE</p>
+            <label>Deposit (Mint 100M SNOW per Set)</label>
+            <div class="requirements">
+                <p>Per Set: 30 WOOF, 6,900 DAMN, 100M FEED, 6,900 WOW, 10,000 SHIPA, 100 LUISA, 100M CHIKA, 100K NONE</p>
+            </div>
             <input type="number" id="depositSets" placeholder="Number of sets (e.g., 2)" min="1" step="1">
-            <button class="action-button" id="depositButton" onclick="depositToken()">Deposit</button>
+            <button class="action-button" id="depositButton">Deposit</button>
         </div>
         <div class="input-box">
-            <label>Withdraw (Burn 100000000 SNOW per Set)</label>
-            <input type="number" id="withdrawAmount" placeholder="100000000" min="100000000" step="100000000">
+            <label>Withdraw (Burn 100M SNOW per Set)</label>
+            <input type="number" id="withdrawAmount" placeholder="100,000,000" min="100000000" step="100000000">
             <div class="percentage-buttons">
                 <button onclick="setPercentage(25)">25%</button>
                 <button onclick="setPercentage(50)">50%</button>
                 <button onclick="setPercentage(75)">75%</button>
                 <button onclick="setPercentage(100)">MAX</button>
             </div>
-            <button class="action-button" id="withdrawButton" onclick="withdrawToken()">Withdraw</button>
+            <button class="action-button" id="withdrawButton">Withdraw</button>
         </div>
         <div class="dog-section">
             <img src="https://raw.githubusercontent.com/Shibfun/ChainBridge/refs/heads/main/images/shiba.gif" alt="Shiba Dog">
@@ -217,13 +237,13 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
     <script>
-        const snowballAddress = '0xEeeD860286668E3110320C6B79071757f23926E4';
+        const snowballAddress = '0xc3D9b20589B273754805246bD717d2630edaB719';
         const snowballAbi = [
             {"inputs":[],"stateMutability":"nonpayable","type":"constructor"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"address[]","name":"tokens","type":"address[]"}],"name":"BatchApprove","type":"event"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"outputAmount","type":"uint256"}],"name":"Deposit","type":"event"},
-            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
+            {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address  [{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},
             {"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":false,"internalType":"uint256","name":"outputAmount","type":"uint256"}],"name":"Withdraw","type":"event"},
             {"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
@@ -232,7 +252,7 @@
             {"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
             {"inputs":[],"name":"deposit","outputs":[],"stateMutability":"nonpayable","type":"function"},
-            {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},
+            {"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256-purple-600">increaseAllowance(address spender, uint256 addedValue) external returns (bool);
             {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"inputAmounts","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
             {"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"inputTokens","outputs":[{"internalType":"contract IERC20","name":"","type":"address"}],"stateMutability":"view","type":"function"},
             {"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},
@@ -249,33 +269,36 @@
             {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"remaining","type":"uint256"}],"type":"function"}
         ];
         const tokenAddresses = [
-            '0xD0daa7B6ff1B40d3cc6F0B2Cf7E85cB993D1c834',
-            '0xeCe898EdCc0AF91430603175F945D8de75291c70',
-            '0xe9Cb2D7ADC24Fc59FE00D6C0A0669BDF16805Fe0',
-            '0x8f4b11d923BbAA6206f3Dd3ff84e8e31bafB49b7',
-            '0x632d1FF1fB27d88EDeDB90e70bFC094D7932A0ad',
-            '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9',
-            '0x61CFA29261d8151D39244b8FfCf8DFd2f9DF3839',
-            '0x64E19b6a167878d2483d166212A3c2c68b1eB842'
+            '0xD0daa7B6ff1B40d3cc6F0B2Cf7E85cB993D1c834', // WOOF
+            '0xeCe898EdCc0AF91430603175F945D8de75291c70', // DAMN
+            '0xe9Cb2D7ADC24Fc59FE00D6C0A0669BDF16805Fe0', // FEED
+            '0x8f4b11d923BbAA6206f3Dd3ff84e8e31bafB49b7', // WOW
+            '0x632d1FF1fB27d88EDeDB90e70bFC094D7932A0ad', // SHIPA
+            '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9', // LUISA
+            '0x61CFA29261d8151D39244b8FfCf8DFd2f9DF3839', // CHIKA
+            '0x64E19b6a167878d2483d166212A3c2c68b1eB842'  // NONE
         ];
         const tokenNames = ['WOOF', 'DAMN', 'FEED', 'WOW', 'SHIPA', 'LUISA', 'CHIKA', 'NONE'];
         const requiredAmounts = [
-            web3.utils.toWei('200', 'ether'),
-            web3.utils.toWei('50000', 'ether'),
-            web3.utils.toWei('400000000', 'ether'),
-            web3.utils.toWei('600000', 'ether'),
-            web3.utils.toWei('800000', 'ether'),
-            web3.utils.toWei('3000', 'ether'),
-            web3.utils.toWei('6000000000', 'ether'),
-            web3.utils.toWei('4000000', 'ether')
+            web3.utils.toWei('30', 'ether'),
+            web3.utils.toWei('6900', 'ether'),
+            web3.utils.toWei('100000000', 'ether'),
+            web3.utils.toWei('6900', 'ether'),
+            web3.utils.toWei('10000', 'ether'),
+            web3.utils.toWei('100', 'ether'),
+            web3.utils.toWei('100000000', 'ether'),
+            web3.utils.toWei('100000', 'ether')
         ];
-        const requiredDisplay = [200, 50000, 400000000, 600000, 800000, 3000, 6000000000, 4000000];
+        const requiredDisplay = [
+            '30', '6,900', '100,000,000', '6,900', '10,000', '100', '100,000,000', '100,000'
+        ];
 
         const chains = {
             Shibarium: {
                 chainId: 109,
                 chainName: 'Shibarium',
-                rpcUrl: 'https://rpc.shibariumchain.com'
+                rpcUrl: 'https://rpc.shibariumchain.com',
+                blockExplorer: 'https://shibariumscan.io'
             }
         };
 
@@ -294,7 +317,7 @@
             withdrawStart: ["Woof! Burning your SNOW, hold tight, pup!", "Arf! Unrolling your snowball now!", "Bark! Withdrawal in progress!"],
             withdrawSuccess: ["Woof! SNOW burned, tokens returned, pup!", "Arf! Your tokens are back!", "Bark! Success! Withdrawal complete!"],
             withdrawFail: ["Woof! Withdrawal failed, check balance, pup!", "Arf! Something went wrong, try again!", "Bark! Withdrawal hit a snag, retry!"],
-            noAmount: ["Woof! Enter a valid amount (multiple of 100000000), pup!", "Arf! Can't process that, pick a valid amount!", "Bark! Need a multiple of 100000000 to proceed!"],
+            noAmount: ["Woof! Enter a valid amount (multiple of 100M), pup!", "Arf! Can't process that, pick a valid amount!", "Bark! Need a multiple of 100M to proceed!"],
             noSets: ["Woof! Enter a valid number of sets (1 or more), pup!", "Arf! Can't deposit nothing, pick a number!", "Bark! Need a set count to proceed!"],
             userDenied: ["Woof! You canceled the transaction, pup!", "Arf! Transaction denied, try again when ready!", "Bark! You said no, let's try that again!"]
         };
@@ -343,8 +366,8 @@
                             chainId: `0x${chainConfig.chainId.toString(16)}`,
                             chainName: chainConfig.chainName,
                             rpcUrls: [chainConfig.rpcUrl],
-                            nativeCurrency: { name: chainConfig.chainName, symbol: 'BONE', decimals: 18 },
-                            blockExplorerUrls: ['https://shibariumscan.io']
+                            nativeCurrency: { name: 'BONE', symbol: 'BONE', decimals: 18 },
+                            blockExplorerUrls: [chainConfig.blockExplorer]
                         }]
                     });
                 } else {
@@ -357,8 +380,13 @@
         async function initializeContracts() {
             snowballContract = new web3.eth.Contract(snowballAbi, snowballAddress);
             tokenContracts = tokenAddresses.map(address => new web3.eth.Contract(erc20Abi, address));
-            const totalSupply = await snowballContract.methods.totalSupply().call();
-            document.getElementById('totalSupply').innerText = `Total Supply: ${parseInt(web3.utils.fromWei(totalSupply, 'ether'))}`;
+            try {
+                const totalSupply = await snowballContract.methods.totalSupply().call();
+                document.getElementById('totalSupply').innerText = `Total Supply: ${Number(web3.utils.fromWei(totalSupply, 'ether')).toLocaleString()}`;
+            } catch (error) {
+                document.getElementById('totalSupply').innerText = 'Total Supply: Error';
+                console.error("Total supply fetch error:", error);
+            }
         }
 
         async function updateBalances() {
@@ -366,18 +394,18 @@
             try {
                 const snowBalanceRaw = await snowballContract.methods.balanceOf(account).call();
                 snowBalance = web3.utils.fromWei(snowBalanceRaw, 'ether');
-                document.getElementById('myBalance').innerText = `My Balance: ${parseInt(snowBalance)}`;
+                document.getElementById('myBalance').innerText = `My Balance: ${Number(snowBalance).toLocaleString()}`;
                 const balances = await Promise.all(tokenContracts.map(contract => contract.methods.balanceOf(account).call()));
                 const balanceElements = ['woofBalance', 'damnBalance', 'feedBalance', 'wowBalance', 'shipaBalance', 'luisaBalance', 'chikaBalance', 'noneBalance'];
                 balances.forEach((balance, i) => {
-                    document.getElementById(balanceElements[i]).innerText = `Balance: ${parseInt(web3.utils.fromWei(balance, 'ether'))}`;
+                    document.getElementById(balanceElements[i]).innerText = `Balance: ${Number(web3.utils.fromWei(balance, 'ether')).toLocaleString()}`;
                 });
             } catch (error) {
-                console.error("Balance update error:", error);
                 document.getElementById('myBalance').innerText = 'My Balance: Error';
                 ['woofBalance', 'damnBalance', 'feedBalance', 'wowBalance', 'shipaBalance', 'luisaBalance', 'chikaBalance', 'noneBalance'].forEach(id => {
                     document.getElementById(id).innerText = 'Balance: Error';
                 });
+                console.error("Balance update error:", error);
             }
         }
 
@@ -417,6 +445,7 @@
 
             try {
                 batchApproveButton.disabled = true;
+                batchApproveButton.innerHTML = 'Approving... <span class="spinner"></span>';
                 status.innerText = "Approving tokens...";
                 dogMessage.innerText = getRandomMessage('approveStart');
 
@@ -439,6 +468,7 @@
                 }
             } finally {
                 batchApproveButton.disabled = false;
+                batchApproveButton.innerHTML = 'Batch Approve';
             }
         }
 
@@ -462,6 +492,7 @@
 
             try {
                 depositButton.disabled = true;
+                depositButton.innerHTML = 'Minting... <span class="spinner"></span>';
                 status.innerText = "Checking balances...";
                 dogMessage.innerText = getRandomMessage('depositStart');
 
@@ -499,6 +530,7 @@
                 }
             } finally {
                 depositButton.disabled = false;
+                depositButton.innerHTML = 'Deposit';
             }
         }
 
@@ -515,13 +547,14 @@
 
             const amount = parseFloat(document.getElementById('withdrawAmount').value);
             if (!amount || amount <= 0 || amount % 100000000 !== 0) {
-                status.innerText = "Please enter a valid amount (multiple of 100000000).";
+                status.innerText = "Please enter a valid amount (multiple of 100M).";
                 dogMessage.innerText = getRandomMessage('noAmount');
                 return;
             }
 
             try {
                 withdrawButton.disabled = true;
+                withdrawButton.innerHTML = 'Burning... <span class="spinner"></span>';
                 status.innerText = "Checking balance...";
                 dogMessage.innerText = getRandomMessage('withdrawStart');
 
@@ -555,10 +588,14 @@
                 }
             } finally {
                 withdrawButton.disabled = false;
+                withdrawButton.innerHTML = 'Withdraw';
             }
         }
 
         document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
+        document.getElementById('batchApproveButton').addEventListener('click', batchApprove);
+        document.getElementById('depositButton').addEventListener('click', depositToken);
+        document.getElementById('withdrawButton').addEventListener('click', withdrawToken);
     </script>
 </body>
 </html>
