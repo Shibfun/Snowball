@@ -215,6 +215,7 @@
             <label>Deposit (Mint 100M SNOW per Set)</label>
             <div class="requirements">
                 <p>Per Set: 30 WOOF, 6,900 DAMN, 100M FEED, 6,900 WOW, 10,000 SHIPA, 100 LUISA, 100M CHIKA, 100K NONE</p>
+                <p id="maxSets">Max Sets: 0</p> <!-- Added to display max sets -->
             </div>
             <input type="number" id="depositSets" placeholder="Number of sets (e.g., 2)" min="1" step="1">
             <button class="action-button" id="depositButton">Deposit</button>
@@ -409,11 +410,23 @@
                 balances.forEach((balance, i) => {
                     document.getElementById(balanceElements[i]).innerText = `Balance: ${Number(web3.utils.fromWei(balance, 'ether')).toLocaleString()}`;
                 });
+
+                // Calculate maximum sets based on balances
+                const maxSets = balances.map((balance, i) => {
+                    const required = web3.utils.toBN(requiredAmounts[i]);
+                    const balanceBN = web3.utils.toBN(balance);
+                    if (required.isZero()) return Infinity; // Avoid division by zero
+                    return Math.floor(Number(balanceBN.div(required)));
+                });
+                const maxPossibleSets = Math.min(...maxSets);
+                document.getElementById('maxSets').innerText = `Max Sets: ${maxPossibleSets >= 0 ? maxPossibleSets : 0}`;
+                console.log("Max possible sets:", maxPossibleSets);
             } catch (error) {
                 document.getElementById('myBalance').innerText = 'My Balance: Error';
                 balanceElements.forEach(id => {
                     document.getElementById(id).innerText = 'Balance: Error';
                 });
+                document.getElementById('maxSets').innerText = 'Max Sets: Error';
                 console.error("Balance update error:", error);
             }
         }
