@@ -32,11 +32,12 @@
         }
         .container {
             width: 100%;
-            max-width: 600px;
+            max-width: 480px;
             background: var(--card-bg);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             border-radius: var(--border-radius);
             padding: 20px;
+            position: relative;
         }
         .header {
             background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
@@ -79,6 +80,7 @@
             border-radius: 10px;
             color: var(--text-color);
             font-size: 1em;
+            text-align: right;
         }
         .balance-row {
             display: flex;
@@ -283,8 +285,6 @@
         const dogMessages = {
             connectSuccess: ["Woof! Wallet connected, ready to mint or burn, pup!", "Arf! You're in, let's roll some SNOW!", "Bark! Wallet's ready, time to play!"],
             connectFail: ["Woof! Couldn't connect wallet, try again, pup!", "Arf! Wallet connection failed, give it another go!", "Bark! Something went wrong, check your wallet!"],
-            connectDenied: ["Woof! You denied the connection, pup!", "Arf! Connection rejected, try again!", "Bark! Wallet access denied, let's retry!"],
-            noMetaMask: ["Woof! MetaMask not found, install it, pup!", "Arf! No MetaMask detected, get it ready!", "Bark! Need MetaMask to proceed!"],
             approveStart: ["Woof! Approving tokens, hold tight, pup!", "Arf! Setting up token approvals now!", "Bark! Approval in progress!"],
             approveSuccess: ["Woof! Tokens approved, ready to deposit, pup!", "Arf! All tokens approved, let's mint!", "Bark! Success! Tokens ready!"],
             approveFail: ["Woof! Approval failed, check details, pup!", "Arf! Something went wrong, try again!", "Bark! Approval hit a snag, retry!"],
@@ -558,10 +558,7 @@
             }
         }
 
-        document.getElementById('connectWalletButton').addEventListener('click', () => {
-            console.log("Connect Wallet button clicked");
-            initializeWeb3();
-        });
+        document.getElementById('connectWalletButton').addEventListener('click', initializeWeb3);
     </script>
 </body>
 </html>
