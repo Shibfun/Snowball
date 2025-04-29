@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SNOW to BONE Price Query</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff9100;
+            --secondary-color: #ff6f61;
+            --gradient-bg: linear-gradient(180deg, #1e1e2f 0%, #2a2a3d 100%);
+            --card-bg: #2c2f48;
+            --input-bg: #373b5c;
+            --text-color: #ffffff;
+            --border-radius: 15px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gradient-bg);
+            color: var(--text-color);
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: var(--card-bg);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: var(--border-radius);
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(90deg, var(--secondary-color)  ZERO_ADDRESS%, var(--primary-color) 100%);
+            padding: 12px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .action-button {
+            padding: 15px;
+            background: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .action-button:disabled {
+            background: #4a4f7a;
+            cursor: not-allowed;
+        }
+        .action-button:hover:not(:disabled) {
+            background: #e68a00;
+        }
+        .result-box {
+            background: var(--input-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-top: 15px;
+        }
+        .result-box p {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        .total-price {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        .error {
+            color: #ff6f61;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 5px;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 480px) {
+            body { padding: 10px; }
+            .container { padding: 15px; }
+            .header { font-size: 1.1em; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">SNOW to BONE Price Query</div>
+        <p>Check value of 100M SNOW in BONE</p>
+        <button class="action-button" id="queryPriceButton">Query Price</button>
+        <div class="result-box" id="resultBox" style="display: none;">
+            <p class="total-price" id="totalPrice">Total: 0.000000 BONE</p>
+            <p id="woofPrice">WOOF (30): 0.000000 BONE</p>
+            <p id="damnPrice">DAMN (6,900): 0.000000 BONE</p>
+            <p id="feedPrice">FEED (100,000,000): 0.000000 BONE</p>
+            <p id="wowPrice">WOW (6,900): 0.000000 BONE</p>
+            <p id="shipaPrice">SHIPA (10,000): 0.000000 BONE</p>
+            <p id="luisaPrice">LUISA (100): 0.000000 BONE</p>
+            <p id="chikaPrice">CHIKA (100,000,000): 0.000000 BONE</p>
+            <p id="nonePrice">NONE (100,000): 0.000000 BONE</p>
+        </div>
+        <div class="error" id="errorMessage"></div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.7.0/dist/web3.min.js"></script>
+    <script>
+        const routerAddress = '0x96b16aBD53Bfd765F4CD118590C1d0be8B57DE24';
+        const wboneAddress = '0x839FdB6cc98342B428E074C1573ADF6D48CA3bFd';
+        const tokenAddresses = [
+            '0xD0daa7B6ff1B40d3cc6F0B2Cf7E85cB993D1c834',
+            '0xeCe898EdCc0AF91430603175F945D8de75291c70',
+            '0xe9Cb2D7ADC24Fc59FE00D6C0A0669BDF16805Fe0',
+            '0x8f4b11d923BbAA6206f3Dd3ff84e8e31bafB49b7',
+            '0x632d1FF1fB27d88EDeDB90e70bFC094D7932A0ad',
+            '0x0cCD687CC6F8461170336D8e8cf46A39313DEab9',
+            '0x61CFA29261d8151D39244b8FfCf8DFd2f9DF3839',
+            '0x64E19b6a167878d2483d166212A3c2c68b1eB842'
+        ];
+        const tokenNames = ['WOOF', 'DAMN', 'FEED', 'WOW', 'SHIPA', 'LUISA', 'CHIKA', 'NONE'];
+        const requiredAmounts = ['30', '6900', '100000000', '6900', '10000', '100', '100000000', '100000'];
+        const shibariumRpc = 'https://rpc.shibariumchain.com';
+
+        const routerAbi = [
+            {
+                "constant": true,
+                "inputs": [
+                    {"name": "amountIn", "type": "uint256"},
+                    {"name": "tokenIn", "type": "address"},
+                    {"name": "tokenOut", "type": "address"}
+                ],
+                "name": "getAmountOut",
+                "outputs": [
+                    {"name": "amount", "type": "uint256"},
+                    {"name": "stable", "type": "bool"}
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+        const erc20Abi = [
+            {
+                "constant": true,
+                "inputs": [],
+                "name": "decimals",
+                "outputs": [{"name": "", "type": "uint8"}],
+                "stateMutability": "view",
+                "type": "function"
+            }
+        ];
+
+        const web3 = new Web3(shibariumRpc);
+        const routerContract = new web3.eth.Contract(routerAbi, routerAddress);
+        const tokenContracts = tokenAddresses.map(address => new web3.eth.Contract(erc20Abi, address));
+
+        async function queryPrice() {
+            const queryButton = document.getElementById('queryPriceButton');
+            const resultBox = document.getElementById('resultBox');
+            const errorMessage = document.getElementById('errorMessage');
+            const totalPriceElement = document.getElementById('totalPrice');
+            const priceElements = tokenNames.map(name => document.getElementById(`${name.toLowerCase()}Price`));
+
+            errorMessage.innerText = '';
+            resultBox.style.display = 'none';
+            queryButton.disabled = true;
+            queryButton.innerHTML = 'Querying... <span class="spinner"></span>';
+
+            try {
+                let totalBoneValue = 0;
+
+                for (let i = 0; i < tokenAddresses.length; i++) {
+                    const tokenAddress = tokenAddresses[i];
+                    const tokenName = tokenNames[i];
+                    const amount = requiredAmounts[i];
+
+                    let decimals;
+                    try {
+                        decimals = await tokenContracts[i].methods.decimals().call();
+                    } catch {
+                        priceElements[i].innerText = `${tokenName} (${amount}): Error (No decimals)`;
+                        continue;
+                    }
+
+                    const amountInWei = web3.utils.toWei(amount, 'ether').slice(0, -(18 - decimals));
+
+                    let amountOut, isStable;
+                    try {
+                        const result = await routerContract.methods.getAmountOut(amountInWei, tokenAddress, wboneAddress).call();
+                        amountOut = result[0];
+                        isStable = result[1];
+                    } catch {
+                        priceElements[i].innerText = `${tokenName} (${amount}): No trading pair`;
+                        continue;
+                    }
+
+                    const boneValue = Number(web3.utils.fromWei(amountOut, 'ether')).toFixed(6);
+                    totalBoneValue += parseFloat(boneValue);
+                    const pairType = isStable ? 'Stable' : 'Volatile';
+                    priceElements[i].innerText = `${tokenName} (${amount}): ${boneValue} BONE (${pairType})`;
+                }
+
+                totalPriceElement.innerText = `Total: ${totalBoneValue.toFixed(6)} BONE`;
+                resultBox.style.display = 'block';
+
+                if (totalBoneValue === 0) {
+                    errorMessage.innerText = 'No trading pairs found. Value of 100M SNOW cannot be determined.';
+                } else if (priceElements.some(el => el.innerText.includes('No trading pair'))) {
+                    errorMessage.innerText = 'Some tokens lack trading pairs, total value may be incomplete.';
+                }
+            } catch {
+                errorMessage.innerText = 'Error querying price. Check network and try again.';
+            } finally {
+                queryButton.disabled = false;
+                queryButton.innerHTML = 'Query Price';
+            }
+        }
+
+        document.getElementById('queryPriceButton').addEventListener('click', queryPrice);
+    </script>
+</body>
+</html>
