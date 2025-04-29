@@ -39,7 +39,7 @@
             padding: 20px;
         }
         .header {
-            background: linear-gradient(90deg, var(--secondary-color)  ZERO_ADDRESS%, var(--primary-color) 100%);
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
             padding: 12px;
             border-radius: var(--border-radius);
             text-align: center;
@@ -147,7 +147,7 @@
         ];
         const tokenNames = ['WOOF', 'DAMN', 'FEED', 'WOW', 'SHIPA', 'LUISA', 'CHIKA', 'NONE'];
         const requiredAmounts = ['30', '6900', '100000000', '6900', '10000', '100', '100000000', '100000'];
-        const shibariumRpc = 'https://rpc.shibariumchain.com';
+        const shibariumRpc = 'https://www.shibrpc.com';
 
         const routerAbi = [
             {
@@ -166,20 +166,16 @@
                 "type": "function"
             }
         ];
-        const erc20Abi = [
-            {
-                "constant": true,
-                "inputs": [],
-                "name": "decimals",
-                "outputs": [{"name": "", "type": "uint8"}],
-                "stateMutability": "view",
-                "type": "function"
-            }
-        ];
 
         const web3 = new Web3(shibariumRpc);
         const routerContract = new web3.eth.Contract(routerAbi, routerAddress);
-        const tokenContracts = tokenAddresses.map(address => new web3.eth.Contract(erc20Abi, address));
+
+        async function withTimeout(promise, timeoutMs) {
+            const timeout = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Request timed out')), timeoutMs);
+            });
+            return Promise.race([promise, timeout]);
+        }
 
         async function queryPrice() {
             const queryButton = document.getElementById('queryPriceButton');
@@ -195,37 +191,28 @@
 
             try {
                 let totalBoneValue = 0;
-
-                for (let i = 0; i < tokenAddresses.length; i++) {
-                    const tokenAddress = tokenAddresses[i];
+                const queries = tokenAddresses.map(async (tokenAddress, i) => {
                     const tokenName = tokenNames[i];
                     const amount = requiredAmounts[i];
+                    const amountInWei = web3.utils.toWei(amount, 'ether');
 
-                    let decimals;
                     try {
-                        decimals = await tokenContracts[i].methods.decimals().call();
-                    } catch {
-                        priceElements[i].innerText = `${tokenName} (${amount}): Error (No decimals)`;
-                        continue;
-                    }
-
-                    const amountInWei = web3.utils.toWei(amount, 'ether').slice(0, -(18 - decimals));
-
-                    let amountOut, isStable;
-                    try {
-                        const result = await routerContract.methods.getAmountOut(amountInWei, tokenAddress, wboneAddress).call();
-                        amountOut = result[0];
-                        isStable = result[1];
+                        const result = await withTimeout(
+                            routerContract.methods.getAmountOut(amountInWei, tokenAddress, wboneAddress).call(),
+                            5000
+                        );
+                        const boneValue = Number(web3.utils.fromWei(result[0], 'ether')).toFixed(6);
+                        const pairType = result[1] ? 'Stable' : 'Volatile';
+                        priceElements[i].innerText = `${tokenName} (${amount}): ${boneValue} BONE (${pairType})`;
+                        return parseFloat(boneValue);
                     } catch {
                         priceElements[i].innerText = `${tokenName} (${amount}): No trading pair`;
-                        continue;
+                        return 0;
                     }
+                });
 
-                    const boneValue = Number(web3.utils.fromWei(amountOut, 'ether')).toFixed(6);
-                    totalBoneValue += parseFloat(boneValue);
-                    const pairType = isStable ? 'Stable' : 'Volatile';
-                    priceElements[i].innerText = `${tokenName} (${amount}): ${boneValue} BONE (${pairType})`;
-                }
+                const boneValues = await Promise.all(queries);
+                totalBoneValue = boneValues.reduce((sum, value) => sum + value, 0);
 
                 totalPriceElement.innerText = `Total: ${totalBoneValue.toFixed(6)} BONE`;
                 resultBox.style.display = 'block';
