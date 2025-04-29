@@ -202,8 +202,7 @@
                             5000
                         );
                         const boneValue = Number(web3.utils.fromWei(result[0], 'ether')).toFixed(6);
-                        const pairType = result[1] ? 'Stable' : 'Volatile';
-                        priceElements[i].innerText = `${tokenName} (${amount}): ${boneValue} BONE (${pairType})`;
+                        priceElements[i].innerText = `${tokenName} (${amount}): ${boneValue} BONE (Volatile)`;
                         return parseFloat(boneValue);
                     } catch {
                         priceElements[i].innerText = `${tokenName} (${amount}): No trading pair`;
